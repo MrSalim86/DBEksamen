@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Return Book</title>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f3f4f6;
+        padding: 40px;
+        margin: 0;
+        color: #1f2937;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-top: 20px;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 10px;
+        width: 100%;
+        margin-top: 5px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+
+      textarea {
+        height: 80px;
+      }
+
+      button {
+        margin-top: 25px;
+        padding: 12px 24px;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      .success {
+        color: green;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .error {
+        color: red;
+        margin-top: 20px;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: #2563eb;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>📤 Return Book</h2>
+      <p id="bookInfo">Loading book info...</p>
+
+      <label for="userId">User ID:</label>
+      <input
+        type="text"
+        id="userId"
+        placeholder="e.g. user_10001"
+        oninput="checkInputs()" />
+
+      <label for="rating">Rating (1–5):</label>
+      <select id="rating" onchange="checkInputs()">
+        <option value="">Select rating</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+
+      <label for="comment">Comment:</label>
+      <textarea
+        id="comment"
+        placeholder="Write your comment here..."
+        oninput="checkInputs()"></textarea>
+
+      <button id="confirmBtn" onclick="returnBook()" disabled>
+        Confirm Return
+      </button>
+
+      <p class="success" id="successMsg"></p>
+      <p class="error" id="errorMsg"></p>
+      <div class="back-link" onclick="goBack()">← Back to Book List</div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const bookId = params.get("bookId");
+
+      async function fetchBookInfo() {
+        try {
+          const res = await fetch(`https://localhost:7154/api/Books/${bookId}`);
+          const data = await res.json();
+          const book = data.book;
+          document.getElementById("bookInfo").innerHTML = `
+          <strong>Title:</strong> ${book.title}<br>
+          <strong>Authors:</strong> ${book.authors}<br>
+          <strong>Year:</strong> ${book.originalPublicationYear}<br>
+          <strong>Rating:</strong> ${book.averageRating}<br>
+          <strong>Language:</strong> ${book.languageCode}
+        `;
+        } catch (err) {
+          document.getElementById("bookInfo").textContent =
+            "Failed to load book info.";
+        }
+      }
+
+      function checkInputs() {
+        const userId = document.getElementById("userId").value.trim();
+        const rating = document.getElementById("rating").value;
+        const comment = document.getElementById("comment").value.trim();
+        document.getElementById("confirmBtn").disabled = !(
+          userId &&
+          rating &&
+          comment
+        );
+      }
+
+      async function returnBook() {
+        const userId = document.getElementById("userId").value.trim();
+        const rating = document.getElementById("rating").value;
+        const comment = document.getElementById("comment").value.trim();
+
+        try {
+          const res = await fetch("https://localhost:7154/api/Rent/return", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookId: parseInt(bookId),
+              userId,
+              rating: parseInt(rating),
+              comment,
+            }),
+          });
+
+          const message = await res.text();
+          if (res.ok) {
+            document.getElementById("successMsg").textContent = message;
+            document.getElementById("errorMsg").textContent = "";
+            setTimeout(() => (window.location.href = "index.html"), 10000);
+          } else {
+            throw new Error(message);
+          }
+        } catch (err) {
+          document.getElementById("errorMsg").textContent =
+            err.message || "Something went wrong.";
+          document.getElementById("successMsg").textContent = "";
+        }
+      }
+
+      function goBack() {
+        window.location.href = "index.html";
+      }
+
+      fetchBookInfo();
+    </script>
+  </body>
+</html>

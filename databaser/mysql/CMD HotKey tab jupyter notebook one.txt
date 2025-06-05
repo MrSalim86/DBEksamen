@@ -1,0 +1,13 @@
+CMD HotKey: tab jupyter notebook one the stie where project is.
+
+
+cd "C:\Users\moham\OneDrive\Datamatiker\OneDrive\Skrivebord\CPHBusniss\Software Developer\Semester 2\AI og ML\AI_Eksamen"
+
+køre backend: .\model_server.py
+
+
+
+KeyWord for batFile: before run: Apps -> Advanced -> App execution aliases -> Turn off 2 x App Installer/pythone3.exe & App Installer/pythone3.exe
+
+
+run pythoneFile: run_mass_data.bat
